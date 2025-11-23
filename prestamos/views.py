@@ -28,16 +28,11 @@ class PrestamoCrear(CreateView):
 
     def form_valid(self, form):
         libro_seleccionado = form.cleaned_data['libro']
-        
-        # SOLUCIÓN: Usar transacción atómica con select_for_update
         with transaction.atomic():
-            # Bloquea el registro del libro para evitar condiciones de carrera
             libro = Libro.objects.select_for_update().get(pk=libro_seleccionado.pk)
             
             if libro.stock > 0:
-                # Guarda el préstamo
                 self.object = form.save()
-                # Actualiza el stock
                 libro.stock -= 1
                 libro.save()
                 
